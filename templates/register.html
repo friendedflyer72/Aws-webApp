@@ -17,13 +17,10 @@
             <div class="bg-white text-black" style="border-radius: 1rem">
               <div class="card-body p-5 text-center">
                 <div class="mb-md-5 mt-md-4 pb-5">
-                  <h2 class="fw-bold mb-3 text-uppercase">Login</h2>
-                  <form method="post">
-                    {% if error %}
+                  <h2 class="fw-bold mb-3 text-uppercase">Register</h2>
+                  <form action="/register" method="post">
+                    {% if error %}  
                     <p class="alert alert-danger font-sm">{{ error }}</p>
-                    {% endif %}
-                    {% if success_message %}
-                    <p class="alert alert-success font-sm">{{ success_message }}</p>
                     {% endif %}
                     <div
                       class="form-black mx-4 pt-5 mb-4 d-flex text-center align-items-center"
@@ -31,7 +28,15 @@
                       <label class="form-label fs-6 me-5" for="email"
                         >Email</label
                       >
-                      <input type="email" id="email" name="email" class="form-control" />
+                      <input type="email" id="email" name="email" class="form-control" required/>
+                    </div>
+                    <div
+                      class="form-black mx-4 mb-4 d-flex text-center align-items-center"
+                    >
+                      <label class="form-label fs-6 me-3" for="username"
+                        >Username</label
+                      >
+                      <input type="text" id="username" name="username" class="form-control" required/>
                     </div>
                     <div
                       class="form-white mx-4 mb-4 d-flex text-center align-items-center"
@@ -49,7 +54,7 @@
                     <input
                       class="btn btn-outline-primary btn-sm text-black"
                       type="submit"
-                      value="Login"
+                      value="Register"
                       style="margin-top: 30px; padding: 10px 40px"
                     >
                 </input>
@@ -57,7 +62,7 @@
                     
                   </form>
                 </div>
-                <p class="fw-bold fs-6">Dont Have an account? <a class="text-decoration-none" href="/register">Sign Up</a></p>
+                <p class="fw-bold fs-6">Have account? <a class="text-decoration-none" href="/login">Login</a></p>
               </div>
             </div>
           </div>
