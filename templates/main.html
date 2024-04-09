@@ -12,9 +12,21 @@
     <title>Main</title>
   </head>
   <body>
-    <div class="main_page" style="background: rgb(185,81,228);
-    background: radial-gradient(circle, rgba(185,81,228,1) 0%, rgba(148,187,233,1) 100%);">
-      <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #8f5deb;">
+    <div
+      class="main_page h-100"
+      style="
+        background: rgb(45, 87, 253);
+        background: radial-gradient(
+          circle,
+          rgb(18, 35, 224) 0%,
+          rgba(148, 187, 233, 1) 100%
+        );
+      "
+    >
+      <nav
+        class="navbar navbar-expand-lg navbar-dark"
+        style="background-color: #2769f5"
+      >
         <div class="container-fluid">
           <a class="navbar-brand" href="#">Music</a>
           <button
@@ -31,51 +43,33 @@
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#"
+                <a class="nav-link active" aria-current="page" href="#user_info"
                   >User Info</a
                 >
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Subscriptions</a>
+                <a class="nav-link" href="#subscriptions_area">Subscriptions</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Query</a>
+                <a href="#query_area" class="nav-link" href="#">Query</a>
               </li>
             </ul>
           </div>
+          <button class="btn btn-danger">logout</button>
         </div>
       </nav>
-      <div class="user_info container py-3">
-        <div class="text text-white fs-1">Welcome {{ user_name }}, to the main page!</div>
-      </div>
-      <div class="subscription_area container py-3">
-        <div class="">
-          <h2 class="text-white">Subscription Area</h2>
-          <div class="row row-cols-3 row-cols-md-4 g-5">
-            {% if searched_music %} {% for music in searched_music %}
-            <div class="col">
-              <div class="card h-100">
-                <img
-                  src="{{ music.img_url }}"
-                  class="card-img-top"
-                  alt="{{ music.artist }}"
-                />
-                <div class="card-body">
-                  <h5 class="card-title">{{ music.title }}</h5>
-                  <p class="card-text">Artist: {{ music.artist }}</p>
-                  <p class="card-text">Year: {{ music.year }}</p>
-                  <button class="btn btn-primary">Subscribe</button>
-                </div>
-              </div>
-            </div>
-            {% endfor %} {% else %}
-            <p>No result found.</p>
-            {% endif %}
-          </div>
+      <div id="user_info" class="user_info container py-3">
+        <div class="text text-center text-white fs-1">
+          Welcome {{ user_name }}, to the main page!
         </div>
       </div>
-      <div class="query_area container py-3">
-        <h2 class="text-white">Query Area</h2>
+      <div id="subscriptions_area" class="subscription_area container py-3">
+        <div class="">
+          <h2 class="text-white pb-4">Subscriptions</h2>
+        </div>
+      </div>
+      <div id="query_area" class="query_area container py-3">
+        <h2 class="text-white pb-3">Query</h2>
         <form action="/main" method="POST">
           <div class="row row-cols-3 text-white">
             <div class="col">
@@ -97,6 +91,51 @@
             </div>
             <div class="col my-2">
               <button type="submit" class="btn btn-primary">Query</button>
+            </div>
+          </div>
+          <div class="container mt-2">
+            <div class="row row-cols-4 row-cols-md-4 g-3 mb-3">
+              {% if searched_music %} {% for music in searched_music %}
+              <div class="col">
+                <div class="card h-100">
+                  <img
+                    src="{{ music.img_url }}"
+                    class="card-img-top"
+                    alt="{{ music.artist }}"
+                  />
+                  <div class="card-body text-start">
+                    <h5 class="card-title">{{ music.title }}</h5>
+                    <p class="card-text">Artist: {{ music.artist }}</p>
+                    <p class="card-text">Year: {{ music.year }}</p>
+                    {% if music.subscribed %}
+                    <form action="/remove_subscription" method="POST">
+                      <input
+                        type="hidden"
+                        name="title"
+                        value="{{ music.title }}"
+                      />
+                      <button type="submit" class="btn btn-danger">
+                        Remove
+                      </button>
+                    </form>
+                    {% else %}
+                    <form action="/subscribe" method="POST">
+                      <input
+                        type="hidden"
+                        name="title"
+                        value="{{ music.title }}"
+                      />
+                      <button type="submit" class="btn btn-primary">
+                        Subscribe
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %} {% else %}
+              <p>No result found.</p>
+              {% endif %}
             </div>
           </div>
         </form>

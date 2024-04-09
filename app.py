@@ -5,16 +5,14 @@ app = Flask(__name__)
 
 # Initialize DynamoDB client
 dynamodb = boto3.resource('dynamodb',
-                  aws_access_key_id="ASIAXYKJVXP7RNNKSNFU",
-                  aws_secret_access_key="s0DYM+P4KiNgg5ha7RRo9OSvS7uzBi3fXJlmuo1u",
-                  aws_session_token=r"IQoJb3JpZ2luX2VjENH//////////wEaCXVzLXdlc3QtMiJIMEYCIQDvFakheWIPTkIvZvnBXOLHYlq+cYjDUGfqTX6BImA3WgIhALx6WNgq0n1j8x5GtBuUWug9U2h7NxtXdWyKgLPdPDdSKr8CCPn//////////wEQABoMNTMzMjY3MzMyMDk1IgyMXNuhN7OhXnKgbK4qkwKOYYOYulsHNGjsGQql9xtIkGxkZMd3iwJhp4JHI6OpHiPTRLpm8BV1jhYsBFVxmI1+GHAHB0JfYP4mrvbVpb8EsA186M5bk4Cs8YrFA7Zl7VzzXEtyyR/lZCoa0fjtHhr7VmkxtuyGeZv+Tm+eZlxjwIpZNjMmjU6QmUtIq1eD9x6m6xcNtj4lMy5+6UX/JYWCwguGRp0YqcXZDDucOoXS4PCfdOm5wbbSdw0UvF2P6z1JBgNHYbD51bkGKpM6WDmdgbh1NIAxHC7g2RDpqy6PC0z0zUe3RU15mH7jP8AvUCOT0bDAThZqlme+zK1idMecbEkcW8X5Dz8cVfXW0XlyBIerd1GwLEG/3iODjQ0lDj4qpjCDlNKwBjqcAYauPyWqSr/JMkplvT3MPgnsisTszNbXM1F7JghQOFukJT+NM/arEKYtiPMhPbX7Fgu7//OiI9F3dyE9fzxjfhb/Mk7nQKy6gO1ZX9DFY5l/zp9VLrW7vPK9axpOBOrXFzBXksefthLDpNrHX/cGq4TDJIaGvdQjNPRXtvtwT7h/gAi2HqbjSkTegxcLVZCDB5rFbgTiwafOYolsow==",
+                  aws_access_key_id="ASIAXYKJVXP7XFR52OAC",
+                  aws_secret_access_key="W8ham5wzpKONmS6K8gIyrQsTkeWaLesMgknSAjkc",
+                  aws_session_token=r"IQoJb3JpZ2luX2VjENn//////////wEaCXVzLXdlc3QtMiJHMEUCIBeV97QenR0P/3ikPjbdjYe9++s66cAz5Jz4z9NvXPh9AiEAo+Qp83sMMe37iYliMfKnBOqnL4W1CG8rrQfWoNBPEwUqtgIIEhAAGgw1MzMyNjczMzIwOTUiDDM6cQJTADMlCydLWyqTAut2XrUac8fLF2UqvOI8sM7mijucNyDGF87io64GYGmcli/UhdiII6G4XzjADRP/y9CmjeGmXtdpyz2OUorX0SXzE7sgFHr0G05lXcAF8ewkS9HJjjngcLSRk+OKyuFWmCOZ6aOp/XahpGS/xcMnw/3MrGhxMLXbaFBrSJEsVGvp45hL3PlYsvQB2qOoTt63z/ONgUGwlwxAEcjKVimMDKUTiQQ/kTuzaxbIRU4XOEprdY3LwskGvI9UZnz1uJYVI3KxXfkOb2Ai/n5nNY2O5A6ZTb7YpNDRdV/c/JG3AYXrvUUga06mfSJnbDhoTnl7lzrP25xuYuzoh/d17L9tBM54i2XtbUO1Jryp2zP/dPxilUuvMIiF1LAGOp0B/4ov6ksC1oot/oKh9bqqIMv6R+KB/RtuBKe8jyT6XX54dxsWVBrSOhd2vtBdM7HWGcs/gq58FKej7g895rt9SM4KrtqMWbrX9fLNOdHiaXk1eBPiB4nLPcS4ZQTAtaBAXQibVsvltCkMxExsNg4zceJnr9i9ZcFlUd4o6HYJ1JRlOb/YH13OBBS/DWn7fHzAGHbKElIm3dnKUjgxig==",
                   region_name="us-east-1")
 app.secret_key = 'dfdfdsfqeq3e2'
 
 # DynamoDB table name
 tableName = 'login'
-
-# DynamoDB table name for music
 music_table_name = 'music'
 
 # Route for the login page
@@ -34,7 +32,8 @@ def login():
             
             # Store user name in session
             session['user_name'] = user_name
-            
+            session['email'] = email
+
             return redirect(url_for('main_page'))
         else:
             error = 'Email or password is invalid'
@@ -51,7 +50,6 @@ def get_user_name(email):
 # Route for the main page
 @app.route('/main', methods=['GET', 'POST'])
 def main_page():
-    user_name = session.get('user_name')
     if request.method == 'POST':
         # Get query parameters from the form
         title = request.form.get('title')
@@ -64,11 +62,12 @@ def main_page():
         # If no results are retrieved, display a message
         if not searched_music:
             no_result_message = 'No result is retrieved. Please try again'
-            return render_template('main.html', no_result_message=no_result_message)
+            return render_template('main.html', no_result_message=no_result_message, user_name=session['user_name'])
         
-        return render_template('main.html', searched_music=searched_music, user_name=user_name)
+        return render_template('main.html', searched_music=searched_music, user_name=session['user_name'])
     
-    return render_template('main.html', user_name=user_name)
+    return render_template('main.html', user_name=session.get('user_name'))
+
 
 # Function to search music in the database based on the search term
 def search_music_in_db(title, year, artist):
@@ -145,6 +144,58 @@ def email_exists(email):
 def create_user(email, username, password):
     table = dynamodb.Table('login')
     table.put_item(Item={'email': email, 'user_name': username, 'password': password})
+
+# Route for the subscribe action
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    # Get the logged-in user's email from the session
+    email = session.get('email')
+    title = request.form['title']
+
+    # Check if the user is logged in
+    if email:
+        # Get the login table
+        login_table = dynamodb.Table('login')
+        
+        # Update the login table to subscribe the user to the music
+        response = login_table.update_item(
+            Key={'email': email},
+            UpdateExpression='ADD music_subscriptions :title',
+            ExpressionAttributeValues={':title': {title}}
+        )
+        
+        # Redirect the user back to the main page after subscribing
+        return redirect(url_for('main_page'))
+    else:
+        # If user is not logged in, redirect to login page
+        return redirect(url_for('login'))
+    
+# Route for removing subscription
+@app.route('/remove_subscription', methods=['POST'])
+def remove_subscription():
+    # Get the logged-in user's email from the session
+    email = session.get('email')
+    title = request.form['title']
+
+    # Check if the user is logged in
+    if email:
+        # Get the login table
+        login_table = dynamodb.Table('login')
+        
+        # Update the login table to remove the music subscription
+        response = login_table.update_item(
+            Key={'email': email},
+            UpdateExpression='DELETE music_subscriptions :title',
+            ExpressionAttributeValues={':title': {title}}
+        )
+        
+        # Redirect the user back to the main page after removing subscription
+        return redirect(url_for('main_page'))
+    else:
+        # If user is not logged in, redirect to login page
+        return redirect(url_for('login'))
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
