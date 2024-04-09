@@ -67,7 +67,38 @@
         <div class="">
           <h2 class="text-white pb-4">Subscriptions</h2>
         </div>
+        <div class="container mt-2">
+          <div class="row row-cols-4 row-cols-md-4 g-3 mb-3">
+            {% if subscribed_music %} {% for music in subscribed_music %}
+            <div class="col">
+              <div class="card h-100">
+                <img
+                  src="{{ music.img_url }}"
+                  class="card-img-top"
+                  alt="{{ music.artist }}"
+                />
+                <div class="card-body text-start">
+                  <h5 class="card-title">{{ music.title }}</h5>
+                  <p class="card-text">Artist: {{ music.artist }}</p>
+                  <p class="card-text">Year: {{ music.year }}</p>
+                  <form action="/remove_subscription" method="POST">
+                    <input
+                      type="hidden"
+                      name="title"
+                      value="{{ music.title }}"
+                    />
+                    <button type="submit" class="btn btn-danger">Remove</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% endfor %} {% else %}
+            <p>No subscriptions found.</p>
+            {% endif %}
+          </div>
+        </div>
       </div>
+
       <div id="query_area" class="query_area container py-3">
         <h2 class="text-white pb-3">Query</h2>
         <form action="/main" method="POST">

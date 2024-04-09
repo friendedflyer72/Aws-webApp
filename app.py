@@ -66,7 +66,16 @@ def main_page():
         
         return render_template('main.html', searched_music=searched_music, user_name=session['user_name'])
     
-    return render_template('main.html', user_name=session.get('user_name'))
+    # Get the logged-in user's email from the session
+    email = session.get('email')
+    
+    # Retrieve subscribed music for the user from DynamoDB
+    if email:
+        subscribed_music = get_subscribed_music(email)
+    else:
+        subscribed_music = None
+    
+    return render_template('main.html', subscribed_music=subscribed_music, user_name=session.get('user_name'))
 
 
 # Function to search music in the database based on the search term
@@ -195,6 +204,30 @@ def remove_subscription():
         # If user is not logged in, redirect to login page
         return redirect(url_for('login'))
 
+# Function to retrieve subscribed music for a user from DynamoDB
+def get_subscribed_music(email):
+    # Get the login table
+    login_table = dynamodb.Table('login')
+    
+    # Retrieve the user's record
+    response = login_table.get_item(Key={'email': email})
+    
+    if 'Item' in response:
+        # Check if the user has any subscribed music
+        if 'music_subscriptions' in response['Item']:
+            subscribed_music_titles = response['Item']['music_subscriptions']
+            
+            # Get the music details for the subscribed titles from the music table
+            music_table = dynamodb.Table('music')
+            subscribed_music = []
+            for title in subscribed_music_titles:
+                music_details = music_table.get_item(Key={'title': title})
+                if 'Item' in music_details:
+                    subscribed_music.append(music_details['Item'])
+            
+            return subscribed_music
+    
+    return None
 
 
 if __name__ == '__main__':
