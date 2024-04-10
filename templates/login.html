@@ -8,9 +8,19 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <style>
+      .login_page {
+        background: rgb(45, 87, 253);
+        background: radial-gradient(
+          circle,
+          rgb(18, 35, 224) 0%,
+          rgba(148, 187, 233, 1) 100%
+        );
+      }
+    </style>
   </head>
   <body>
-    <section class="vh-100 bg-primary bg-gradient">
+    <section class="login_page vh-100">
       <div class="container py-4 h-100">
         <div class="row d-flex justify-content-center align-items-center h-100">
           <div class="col-12 col-md-8 col-lg-6 col-xl-5">
@@ -23,7 +33,7 @@
                     <p class="alert alert-danger font-sm">{{ error }}</p>
                     {% endif %}
                     {% if success_message %}
-                    <p class="alert alert-success font-sm">{{ success_message }}</p>
+                    <p class="alert alert-success font-sm mt-2">{{ success_message }}</p>
                     {% endif %}
                     <div
                       class="form-black mx-4 pt-5 mb-4 d-flex text-center align-items-center"

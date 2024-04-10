@@ -9,23 +9,28 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <title>Main</title>
-  </head>
-  <body>
-    <div
-      class="main_page h-100"
-      style="
+    <style>
+      body {
+        margin: 0;
+      }
+      .main_page {
         background: rgb(45, 87, 253);
         background: radial-gradient(
           circle,
           rgb(18, 35, 224) 0%,
           rgba(148, 187, 233, 1) 100%
         );
-      "
-    >
+        height: 100vh;
+        width: 100wv;
+      }
+    </style>
+    <title>Main</title>
+  </head>
+  <body>
+    <div class="main_page h-100 m-0">
       <nav
         class="navbar navbar-expand-lg navbar-dark"
-        style="background-color: #2769f5"
+        style="background-color: #3371f6"
       >
         <div class="container-fluid">
           <a class="navbar-brand" href="#">Music</a>
@@ -55,15 +60,15 @@
               </li>
             </ul>
           </div>
-          <button class="btn btn-danger">logout</button>
+          <button class="btn btn-danger" onclick="location.href='/logout'">logout</button>
         </div>
       </nav>
-      <div id="user_info" class="user_info container py-3">
+      <div id="user_info" class="user_info container py-3 mt-5">
         <div class="text text-center text-white fs-1">
           Welcome {{ user_name }}, to the main page!
         </div>
       </div>
-      <div id="subscriptions_area" class="subscription_area container py-3">
+      <div id="subscriptions_area" class="subscription_area container py-3 mb-5">
         <div class="">
           <h2 class="text-white pb-4">Subscriptions</h2>
         </div>
@@ -99,7 +104,7 @@
         </div>
       </div>
 
-      <div id="query_area" class="query_area container py-3">
+      <div id="query_area" class="query_area container py-3 mt-5">
         <h2 class="text-white pb-3">Query</h2>
         <form action="/main" method="POST">
           <div class="row row-cols-3 text-white">
@@ -120,12 +125,12 @@
                 class="form-control"
               />
             </div>
-            <div class="col my-2">
+            <div class="col mt-3">
               <button type="submit" class="btn btn-primary">Query</button>
             </div>
           </div>
           <div class="container mt-2">
-            <div class="row row-cols-4 row-cols-md-4 g-3 mb-3">
+            <div class="row row-cols-4 row-cols-md-4 g-3 my-3">
               {% if searched_music %} {% for music in searched_music %}
               <div class="col">
                 <div class="card h-100">
