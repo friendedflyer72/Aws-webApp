@@ -5,9 +5,9 @@ app = Flask(__name__)
 
 # Initialize DynamoDB client
 dynamodb = boto3.resource('dynamodb',
-                          aws_access_key_id="ASIAXYKJVXP7XFR52OAC",
-                          aws_secret_access_key="W8ham5wzpKONmS6K8gIyrQsTkeWaLesMgknSAjkc",
-                          aws_session_token=r"IQoJb3JpZ2luX2VjENn//////////wEaCXVzLXdlc3QtMiJHMEUCIBeV97QenR0P/3ikPjbdjYe9++s66cAz5Jz4z9NvXPh9AiEAo+Qp83sMMe37iYliMfKnBOqnL4W1CG8rrQfWoNBPEwUqtgIIEhAAGgw1MzMyNjczMzIwOTUiDDM6cQJTADMlCydLWyqTAut2XrUac8fLF2UqvOI8sM7mijucNyDGF87io64GYGmcli/UhdiII6G4XzjADRP/y9CmjeGmXtdpyz2OUorX0SXzE7sgFHr0G05lXcAF8ewkS9HJjjngcLSRk+OKyuFWmCOZ6aOp/XahpGS/xcMnw/3MrGhxMLXbaFBrSJEsVGvp45hL3PlYsvQB2qOoTt63z/ONgUGwlwxAEcjKVimMDKUTiQQ/kTuzaxbIRU4XOEprdY3LwskGvI9UZnz1uJYVI3KxXfkOb2Ai/n5nNY2O5A6ZTb7YpNDRdV/c/JG3AYXrvUUga06mfSJnbDhoTnl7lzrP25xuYuzoh/d17L9tBM54i2XtbUO1Jryp2zP/dPxilUuvMIiF1LAGOp0B/4ov6ksC1oot/oKh9bqqIMv6R+KB/RtuBKe8jyT6XX54dxsWVBrSOhd2vtBdM7HWGcs/gq58FKej7g895rt9SM4KrtqMWbrX9fLNOdHiaXk1eBPiB4nLPcS4ZQTAtaBAXQibVsvltCkMxExsNg4zceJnr9i9ZcFlUd4o6HYJ1JRlOb/YH13OBBS/DWn7fHzAGHbKElIm3dnKUjgxig==",
+                          aws_access_key_id="ASIAXYKJVXP7XE6JOQ3M",
+                          aws_secret_access_key="bpw5XMnw9f0fl69Ilx4aRBLuq8nG5Q8uhjMSHV78",
+                          aws_session_token=r"IQoJb3JpZ2luX2VjEDAaCXVzLXdlc3QtMiJGMEQCICbjW2YxB/3i6IuXu4i4zjPncX+XyGSYSGDo2iUCMaoeAiB0zFYHggCTQ6Xe24y8om7g2KqXIcF2iPQSuHm/SLFD7yq2AghpEAAaDDUzMzI2NzMzMjA5NSIM2oMYEnpi3agoZO3mKpMCE0PJF+ShXotkv+WLcq7F+qRTB/iVh0mO1rWMx+hcN+nvW68Lx4zZ3aF1FBj3nxPhA632h+wI2l/ukZdU+BU/I+X0akbRNtim/xV5VX3QGsM9vk/ersqXF+wQLR9l1f150Mzk4/9KBiu9QCHnm72mtZwmLYGMfJHRq3U9seOdmOJewm6pEANEnelhkO1a0ymv1dQLiYdWUx5pKCrvB2ZxsyEBR9KKCV27lGDPwrX0LrmqfhMuVAUT55g3/VbmgXzXoXCFUnXyBFhKEyGH0I++9cJJKipNC+YlHed/5RdLy068kSdYr+0YYoKSASZcGi7LSxAIZycfoLMC0hOFKSXBg0Q+1O8/A5rc27TBLjhHWl8h+LIws53nsAY6ngHPr7oq3ZauWS2pUunDmblMf79bQA+9hVPLKUaR+FzjqOf4yYuTiowcjk1db1EFpNoHd+9F2qZ9/LZOUERl7jDkkh8C0vdIt9Jvf1NO4hwykx1N/LEb2E0WTLmkxbS0Hemxfz5zTw0Nwfx8GpJachYzTYnNlHFVMqGp5Ue0719FaSzG44lVx2sKzUEijCK3MC8IplRQNey0x69Ac+xAYA==",
                           region_name="us-east-1")
 app.secret_key = 'dfdfdsfqeq3e2'
 
@@ -116,6 +116,9 @@ def search_music_in_db(title, year, artist):
 
     # Combine filter expressions using 'AND'
     filter_expression = ' AND '.join(filter_expressions)
+
+    if not filter_expressions:
+        return[]
 
     # Perform the scan operation with the filter expression
     response = music_table.scan(
