@@ -29,11 +29,11 @@
   <body>
     <div class="main_page h-100 m-0">
       <nav
-        class="navbar navbar-expand-lg navbar-dark"
-        style="background-color: #3371f6"
+        class="navbar navbar-expand-lg navbar-dark fs-5"
+        style="background-color: rgba(0, 0, 0, 0.5)"
       >
         <div class="container-fluid">
-          <a class="navbar-brand" href="#">Music</a>
+          <a class="navbar-brand fs-3" href="#">Music App</a>
           <button
             class="navbar-toggler"
             type="button"
@@ -46,7 +46,7 @@
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav fs-6">
               <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#user_info"
                   >User Info</a
@@ -60,7 +60,9 @@
               </li>
             </ul>
           </div>
-          <button class="btn btn-danger" onclick="location.href='/logout'">logout</button>
+          <button class="btn btn-danger" onclick="location.href='/logout'">
+            logout
+          </button>
         </div>
       </nav>
       <div id="user_info" class="user_info container py-3 mt-5">
@@ -68,7 +70,10 @@
           Welcome {{ user_name }}, to the main page!
         </div>
       </div>
-      <div id="subscriptions_area" class="subscription_area container py-3 mb-5">
+      <div
+        id="subscriptions_area"
+        class="subscription_area container py-3 mb-5"
+      >
         <div class="">
           <h2 class="text-white pb-4">Subscriptions</h2>
         </div>
@@ -129,52 +134,52 @@
               <button type="submit" class="btn btn-primary">Query</button>
             </div>
           </div>
-          <div class="container mt-2">
-            <div class="row row-cols-4 row-cols-md-4 g-3 my-3">
-              {% if searched_music %} {% for music in searched_music %}
-              <div class="col">
-                <div class="card h-100">
-                  <img
-                    src="{{ music.img_url }}"
-                    class="card-img-top"
-                    alt="{{ music.artist }}"
-                  />
-                  <div class="card-body text-start">
-                    <h5 class="card-title">{{ music.title }}</h5>
-                    <p class="card-text">Artist: {{ music.artist }}</p>
-                    <p class="card-text">Year: {{ music.year }}</p>
-                    {% if music.subscribed %}
-                    <form action="/remove_subscription" method="POST">
-                      <input
-                        type="hidden"
-                        name="title"
-                        value="{{ music.title }}"
-                      />
-                      <button type="submit" class="btn btn-danger">
-                        Remove
-                      </button>
-                    </form>
-                    {% else %}
-                    <form action="/subscribe" method="POST">
-                      <input
-                        type="hidden"
-                        name="title"
-                        value="{{ music.title }}"
-                      />
-                      <button type="submit" class="btn btn-primary">
-                        Subscribe
-                      </button>
-                    </form>
-                    {% endif %}
-                  </div>
+        </form>
+        <div class="container mt-2">
+          <div class="row row-cols-4 row-cols-md-4 g-3 my-3">
+            {% if searched_music %} {% for music in searched_music %}
+            <div class="col">
+              <div class="card h-100">
+                <img
+                  src="{{ music.img_url }}"
+                  class="card-img-top"
+                  alt="{{ music.artist }}"
+                />
+                <div class="card-body text-start">
+                  <h5 class="card-title">{{ music.title }}</h5>
+                  <p class="card-text">Artist: {{ music.artist }}</p>
+                  <p class="card-text">Year: {{ music.year }}</p>
+                  {% if music.subscribed %}
+                  <form action="/remove_subscription" method="POST">
+                    <input
+                      type="hidden"
+                      name="title"
+                      value="{{ music.title }}"
+                    />
+                    <button type="submit" class="btn btn-danger">Remove</button>
+                  </form>
+                  {% else %}
+                  <form action="/subscribe" method="POST">
+                    <!-- Updated form action -->
+                    <input
+                      type="hidden"
+                      name="title"
+                      value="{{ music.title }}"
+                    />
+                    <button type="submit" class="btn btn-primary">
+                      Subscribe
+                    </button>
+                    <!-- Subscribe button -->
+                  </form>
+                  {% endif %}
                 </div>
               </div>
-              {% endfor %} {% else %}
-              <p>No result found.</p>
-              {% endif %}
             </div>
+            {% endfor %} {% else %}
+            <p>No result found.</p>
+            {% endif %}
           </div>
-        </form>
+        </div>
       </div>
     </div>
     <script
