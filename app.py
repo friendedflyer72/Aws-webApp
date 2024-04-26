@@ -1,23 +1,15 @@
+import json
+import requests
 from flask import Flask, render_template, request, redirect, url_for, session
 import boto3
 
+API_BASE_URL = 'https://vfruzgf8j6.execute-api.us-east-1.amazonaws.com/production'
+
 app = Flask(__name__)
 
-# Initialize DynamoDB client
-dynamodb = boto3.resource('dynamodb',
-                          aws_access_key_id="ASIAXYKJVXP7XE6JOQ3M",
-                          aws_secret_access_key="bpw5XMnw9f0fl69Ilx4aRBLuq8nG5Q8uhjMSHV78",
-                          aws_session_token=r"IQoJb3JpZ2luX2VjEDAaCXVzLXdlc3QtMiJGMEQCICbjW2YxB/3i6IuXu4i4zjPncX+XyGSYSGDo2iUCMaoeAiB0zFYHggCTQ6Xe24y8om7g2KqXIcF2iPQSuHm/SLFD7yq2AghpEAAaDDUzMzI2NzMzMjA5NSIM2oMYEnpi3agoZO3mKpMCE0PJF+ShXotkv+WLcq7F+qRTB/iVh0mO1rWMx+hcN+nvW68Lx4zZ3aF1FBj3nxPhA632h+wI2l/ukZdU+BU/I+X0akbRNtim/xV5VX3QGsM9vk/ersqXF+wQLR9l1f150Mzk4/9KBiu9QCHnm72mtZwmLYGMfJHRq3U9seOdmOJewm6pEANEnelhkO1a0ymv1dQLiYdWUx5pKCrvB2ZxsyEBR9KKCV27lGDPwrX0LrmqfhMuVAUT55g3/VbmgXzXoXCFUnXyBFhKEyGH0I++9cJJKipNC+YlHed/5RdLy068kSdYr+0YYoKSASZcGi7LSxAIZycfoLMC0hOFKSXBg0Q+1O8/A5rc27TBLjhHWl8h+LIws53nsAY6ngHPr7oq3ZauWS2pUunDmblMf79bQA+9hVPLKUaR+FzjqOf4yYuTiowcjk1db1EFpNoHd+9F2qZ9/LZOUERl7jDkkh8C0vdIt9Jvf1NO4hwykx1N/LEb2E0WTLmkxbS0Hemxfz5zTw0Nwfx8GpJachYzTYnNlHFVMqGp5Ue0719FaSzG44lVx2sKzUEijCK3MC8IplRQNey0x69Ac+xAYA==",
-                          region_name="us-east-1")
 app.secret_key = 'dfdfdsfqeq3e2'
 
-# DynamoDB table name
-tableName = 'login'
-music_table_name = 'music'
-
 # Route for the login page
-
-
 @app.route('/', methods=['GET', 'POST'])
 def login():
     error = None
@@ -28,9 +20,10 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        if validate_credentials(email, password):
+        user = validate_credentials(email, password)
+        if user:
             # Retrieve user name from DynamoDB
-            user_name = get_user_name(email)
+            user_name = user['user_name']
 
             # Store user name in session
             session['user_name'] = user_name
@@ -41,19 +34,22 @@ def login():
             error = 'Email or password is invalid'
     return render_template('login.html', error=error, success_message=success_message)
 
+# Function to validate user credentials
+def validate_credentials(email, password):
+    response = requests.post(f'{API_BASE_URL}/login', json={'email': email, 'password': password})
+    if response.json()['statusCode'] == 200:
+        body = json.loads(response.json()['body'])
+        return body['user']
+    return False
+
 # Function to retrieve user name from DynamoDB
-
-
 def get_user_name(email):
-    table = dynamodb.Table('login')
-    response = table.get_item(Key={'email': email})
-    if 'Item' in response:
-        return response['Item']['user_name']
+    response = requests.get(f'{API_BASE_URL}/user', params={'email': email})
+    if response.json()['statusCode'] == 200:
+        return response.json()['body']['user_name']
     return None
 
 # Route for the main page
-
-
 @app.route('/main', methods=['GET', 'POST'])
 def main_page():
     if request.method == 'POST':
@@ -63,9 +59,9 @@ def main_page():
         artist = request.form.get('artist')
 
         # Perform the search
-        searched_music = search_music_in_db(title, year, artist)
+        searched_music = search_music(title, year, artist)
 
-        # Retrieve subscribed music for the user from DynamoDB
+        # Retrieve subscribed music for the user
         email = session.get('email')
         if email:
             subscribed_music = get_subscribed_music(email)
@@ -75,13 +71,13 @@ def main_page():
         # If no results are retrieved, display a message
         if not searched_music:
             no_result_message = 'No result found. Please try again with different search criteria.'
-            return render_template('main.html', no_result_message=no_result_message, user_name=session['user_name'])
-        return render_template('main.html', searched_music=searched_music, user_name=session['user_name'], subscribed_music=subscribed_music)
+            return render_template('main.html', no_result_message=no_result_message, subscribed_music=subscribed_music, user_name=session['user_name'])
+        return render_template('main.html', searched_music=searched_music["searched_music"], user_name=session['user_name'], subscribed_music=subscribed_music)
 
     # Get the logged-in user's email from the session
     email = session.get('email')
 
-    # Retrieve subscribed music for the user from DynamoDB
+    # Retrieve subscribed music for the user
     if email:
         subscribed_music = get_subscribed_music(email)
     else:
@@ -89,47 +85,19 @@ def main_page():
 
     return render_template('main.html', subscribed_music=subscribed_music, user_name=session.get('user_name'))
 
+# Function to search music
+def search_music(title, year, artist):
+    response = requests.post(f'{API_BASE_URL}/search-music-db', json={'title': title, 'year': year, 'artist': artist})
+    if response.json()['statusCode'] == 200:
+        return json.loads(response.json()['body'])
+    return None
 
-# Function to search music in the database based on the search term
-def search_music_in_db(title, year, artist):
-    # Get the music table
-    music_table = dynamodb.Table('music')
-
-    # Define the filter expressions for each search term
-    filter_expressions = []
-    expression_attribute_values = {}
-    expression_attribute_names = {}  # New dictionary for attribute names
-
-    if title:
-        filter_expressions.append('#t = :title')
-        expression_attribute_values[':title'] = title
-        # Alias for reserved keyword
-        expression_attribute_names['#t'] = 'title'
-    if year:
-        filter_expressions.append('#y = :year')
-        expression_attribute_values[':year'] = year
-        expression_attribute_names['#y'] = 'year'
-    if artist:
-        filter_expressions.append('#a = :artist')
-        expression_attribute_values[':artist'] = artist
-        expression_attribute_names['#a'] = 'artist'
-
-    # Combine filter expressions using 'AND'
-    filter_expression = ' AND '.join(filter_expressions)
-
-    if not filter_expressions:
-        return[]
-
-    # Perform the scan operation with the filter expression
-    response = music_table.scan(
-        FilterExpression=filter_expression,
-        ExpressionAttributeNames=expression_attribute_names,
-        ExpressionAttributeValues=expression_attribute_values
-    )
-
-    # Return the search results
-    return response['Items']
-
+# Function to retrieve subscribed music for a user
+def get_subscribed_music(email):
+    response = requests.post(f'{API_BASE_URL}/getUserSubscription', json={'email': email})
+    if response.json()['statusCode'] == 200:
+        return response.json()['body']
+    return None
 
 # Route for the registration page
 @app.route('/register', methods=['GET', 'POST'])
@@ -140,8 +108,8 @@ def register():
         email = request.form['email']
         username = request.form['username']
         password = request.form['password']
-        if not email_exists(email):
-            create_user(email, username, password)
+        response = requests.post(f'{API_BASE_URL}/register', json={'email': email, 'username':username, 'password': password})
+        if response.json()['statusCode'] == 200:
             success_message = 'Registration successful. You can now login.'
             # Pass the success_message variable to the login template
             return render_template('login.html', success_message=success_message)
@@ -149,121 +117,34 @@ def register():
             error = 'The email already exists'
     return render_template('register.html', error=error)
 
-
-# Function to validate user credentials
-def validate_credentials(email, password):
-    table = dynamodb.Table('login')
-    response = table.get_item(Key={'email': email})
-    if 'Item' in response:
-        if response['Item']['password'] == password:
-            return True
-    return False
-
-# Function to check if email already exists in the login table
-
-
-def email_exists(email):
-    table = dynamodb.Table('login')
-    response = table.get_item(Key={'email': email})
-    return 'Item' in response
-
-# Function to create a new user in the login table
-
-
-def create_user(email, username, password):
-    table = dynamodb.Table('login')
-    table.put_item(
-        Item={'email': email, 'user_name': username, 'password': password})
-
 # Route for the subscribe action
-
-
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
-    # Get the logged-in user's email from the session
     email = session.get('email')
     title = request.form['title']
-
-    # Check if the user is logged in
+    print(title)
     if email:
-        # Get the login table
-        login_table = dynamodb.Table('login')
-
-        # Update the login table to subscribe the user to the music
-        response = login_table.update_item(
-            Key={'email': email},
-            UpdateExpression='ADD music_subscriptions :title',
-            ExpressionAttributeValues={':title': {title}}
-        )
-
-        # Redirect the user back to the main page after subscribing
-        return redirect(url_for('main_page'))
-    else:
-        # If user is not logged in, redirect to login page
-        return redirect(url_for('login'))
-
-# Route for removing subscription
-
-
-@app.route('/remove_subscription', methods=['POST'])
-def remove_subscription():
-    # Get the logged-in user's email from the session
-    email = session.get('email')
-    title = request.form['title']
-
-    # Check if the user is logged in
-    if email:
-        # Get the login table
-        login_table = dynamodb.Table('login')
-
-        # Update the login table to remove the music subscription
-        response = login_table.update_item(
-            Key={'email': email},
-            UpdateExpression='DELETE music_subscriptions :title',
-            ExpressionAttributeValues={':title': {title}}
-        )
-
-        # Redirect the user back to the main page after removing subscription
-        return redirect(url_for('main_page'))
-    else:
-        # If user is not logged in, redirect to login page
-        return redirect(url_for('login'))
-
-# Function to retrieve subscribed music for a user from DynamoDB
-
-
-def get_subscribed_music(email):
-    # Get the login table
-    login_table = dynamodb.Table('login')
-
-    # Retrieve the user's record
-    response = login_table.get_item(Key={'email': email})
-
-    if 'Item' in response:
-        # Check if the user has any subscribed music
-        if 'music_subscriptions' in response['Item']:
-            subscribed_music_titles = response['Item']['music_subscriptions']
-
-            # Get the music details for the subscribed titles from the music table
-            music_table = dynamodb.Table('music')
-            subscribed_music = []
-            for title in subscribed_music_titles:
-                music_details = music_table.get_item(Key={'title': title})
-                if 'Item' in music_details:
-                    subscribed_music.append(music_details['Item'])
-
-            return subscribed_music
-
-    return None
-
-
-@app.route('/logout')
-def logout():
-    # Clear the user session
-    session.clear()
-    # Redirect the user to the login page
+        response = requests.post(f'{API_BASE_URL}/music-subscription', json={'email': email, 'title': title})
+        if response.json()['statusCode'] == 200:
+            return redirect(url_for('main_page'))
     return redirect(url_for('login'))
 
+# Route for removing subscription
+@app.route('/remove_subscription', methods=['POST'])
+def remove_subscription():
+    email = session.get('email')
+    title = request.form['title']
+    if email:
+        response = requests.post(f'{API_BASE_URL}/remove-subscription', json={'email': email, 'title': title})
+        if response.json()['statusCode'] == 200:
+            return redirect(url_for('main_page'))
+    return redirect(url_for('login'))
+
+# Route for logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

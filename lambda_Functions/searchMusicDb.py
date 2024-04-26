@@ -34,15 +34,15 @@ def search_music_in_db(title, year, artist):
     expression_attribute_names = {}
     
     if title:
-        filter_expressions.append('#t = :title')
+        filter_expressions.append('contains(#t, :title)')
         expression_attribute_values[':title'] = title
         expression_attribute_names['#t'] = 'title'
     if year:
-        filter_expressions.append('#y = :year')
+        filter_expressions.append('contains(#y, :year)')
         expression_attribute_values[':year'] = year
         expression_attribute_names['#y'] = 'year'
     if artist:
-        filter_expressions.append('#a = :artist')
+        filter_expressions.append('contains(#a, :artist)')
         expression_attribute_values[':artist'] = artist
         expression_attribute_names['#a'] = 'artist'
     
@@ -57,4 +57,24 @@ def search_music_in_db(title, year, artist):
         ExpressionAttributeValues=expression_attribute_values
     )
     
-    return response['Items']
+    musics = []
+    
+    for music in response['Items']:
+        musics.append(get_signed_url(music))
+    
+    return musics
+    
+    
+def get_signed_url(music):
+        # Create a new S3 client
+    s3_client = boto3.client('s3')
+    obj = music['img_url'].split("/")[-1]
+    # Generate the signed URL
+    signed_url = s3_client.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': 's3960290', 'Key': obj},
+        ExpiresIn=1000
+    )
+
+    music['img_url'] = signed_url
+    return music

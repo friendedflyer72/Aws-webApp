@@ -18,6 +18,7 @@ def lambda_handler(event, context):
         }
     user = validate_credentials(email, password)
     if user:
+        user["music_subscriptions"] = list(user["music_subscriptions"])
         return {
             "statusCode": 200,
             "body": json.dumps({"message": "Login successful.", "user": user}),

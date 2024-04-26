@@ -1,32 +1,24 @@
-import json
 import boto3
 
-# Initialize DynamoDB client
 dynamodb = boto3.resource('dynamodb')
 
-# Define the DynamoDB table name
-music_table_name = 'music'
-
 def lambda_handler(event, context):
-    # Retrieve email from the event
     email = event.get('email')
-    
+
     if not email:
         return {
             "statusCode": 400,
-            "body": json.dumps({"error": "Email is required."}),
+            "body": "Email is required for fetching subscribed music.",
             "headers": {
                 "Content-Type": "application/json"
             }
         }
-    
-    # Retrieve subscribed music for the user
+
     subscribed_music = get_subscribed_music(email)
-    
     if subscribed_music:
         return {
             "statusCode": 200,
-            "body": json.dumps({"subscribed_music": subscribed_music}),
+            "body": subscribed_music,
             "headers": {
                 "Content-Type": "application/json"
             }
@@ -34,25 +26,42 @@ def lambda_handler(event, context):
     else:
         return {
             "statusCode": 404,
-            "body": json.dumps({"error": "No subscribed music found for the user."}),
+            "body": "No subscribed music found for the provided email.",
             "headers": {
                 "Content-Type": "application/json"
             }
         }
 
 def get_subscribed_music(email):
-    # Get the DynamoDB table
-    music_table = dynamodb.Table(music_table_name)
-    
-    # Query the table for subscribed music based on the user's email
-    response = music_table.query(
-        KeyConditionExpression='user_email = :email',
-        ExpressionAttributeValues={
-            ':email': email
-        }
+    login_table = dynamodb.Table('login')
+
+    response = login_table.get_item(Key={'email': email})
+
+    if 'Item' in response:
+        if 'music_subscriptions' in response['Item']:
+            subscribed_music_titles = response['Item']['music_subscriptions']
+            music_table = dynamodb.Table('music')
+            subscribed_music = []
+            for title in subscribed_music_titles:
+                music_details = music_table.get_item(Key={'title': title})
+                if 'Item' in music_details:
+                    subscribed_music.append(music_details['Item'])
+            for music in subscribed_music:
+                music = get_signed_url(music)
+            return subscribed_music
+
+    return None
+
+def get_signed_url(music):
+        # Create a new S3 client
+    s3_client = boto3.client('s3')
+    obj = music['img_url'].split("/")[-1]
+    # Generate the signed URL
+    signed_url = s3_client.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': 's3960290', 'Key': obj},
+        ExpiresIn=1000
     )
-    
-    # Extract the subscribed music items from the response
-    subscribed_music = [item for item in response.get('Items', [])]
-    
-    return subscribed_music
+
+    music['img_url'] = signed_url
+    return music
